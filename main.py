@@ -15,7 +15,6 @@ screen = pg.display.set_mode(SCREEN_SCALE)
 clock = pg.time.Clock()
 
 
-
 # 物件初始化
 player = Player(WHITE, 50, (400, 300))
 
@@ -25,8 +24,6 @@ obstacles = pg.sprite.Group(
 )
 # *代表解包，把obstacles每一項物件都加入到all_sprites中
 backgroundObjects = pg.sprite.Group(*obstacles)
-
-# 檢查player和obstacles有沒有碰到
 
 
 def check_collision():
@@ -62,11 +59,11 @@ while True:
 
     # Update draw
     screen.fill(BLACK)
-    all_sprites = pg.sprite.Group(player, *obstacles, *bullets)
+    all_sprites = pg.sprite.Group(player, *obstacles, *bullets, player.blood)
     all_sprites.draw(screen)
     pg.display.flip()
 
-    
+
     # Check keyboard input
     keys = pg.key.get_pressed()
     if keys[pg.K_LEFT]:

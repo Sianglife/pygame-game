@@ -13,7 +13,8 @@ class Player(Circle):
         self.original_image = pg.transform.scale(pg.image.load(
             'asset/player.png').convert_alpha(), (radius, radius))
         self.angle = 0
-        self.blood = Blood(100, 100)
+        self.bullets = pg.sprite.Group()
+        self.blood = Blood(400, 200)
         self.update()
 
     def fire(self):
@@ -21,7 +22,7 @@ class Player(Circle):
             return
 
         bullet = Bullet((30, 10), self.rect.center, self.angle)
-        bullets.add(bullet)
+        self.bullets.add(bullet)
         self.launch_time = pg.time.get_ticks()
 
     def update(self):
