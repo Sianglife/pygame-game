@@ -2,13 +2,14 @@ from modal.object import GameObject
 import pygame as pg
 import math
 
-bullets = pg.sprite.Group()
+image = ['asset/bullet.png', 'asset/bullet-npc.png']
+
 
 class Bullet(GameObject):
-    def __init__(self, size, position=(100, 100), angle=0):
+    def __init__(self, size, position=(100, 100), angle=0, role=0):
         super().__init__(size, position)
         self.original_image = pg.transform.scale(pg.image.load(
-            'asset/bullet.png').convert_alpha(), size)
+            image[role]).convert_alpha(), size)
         self.angle = angle  # 子彈的角度
         self.move_speed = 10  # 子彈移動速度
         self.set_angle(angle)  # 設定角度與移動向量
