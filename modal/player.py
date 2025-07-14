@@ -1,7 +1,7 @@
 from modal.bullet import Bullet
-import const.color as color
 import pygame as pg
 from modal.object import Circle
+from modal.blood import Blood
 from modal.bullet import bullets
 import math
 
@@ -13,6 +13,7 @@ class Player(Circle):
         self.original_image = pg.transform.scale(pg.image.load(
             'asset/player.png').convert_alpha(), (radius, radius))
         self.angle = 0
+        self.blood = Blood(100, 100)
         self.update()
 
     def fire(self):
@@ -31,3 +32,4 @@ class Player(Circle):
         self.angle = math.degrees(math.atan2(-dy, dx))
         self.image = pg.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
+        self.blood.update()
