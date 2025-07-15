@@ -1,0 +1,1 @@
+SCREEN_SCALE = (800, 600)

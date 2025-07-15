@@ -1,7 +1,7 @@
 from modal.bullet import Bullet
 import pygame as pg
 from modal.object import Circle
-from modal.blood import Blood
+from modal.blood import Blood, blood
 
 class Player(Circle):
     def __init__(self, color, radius, position=(100, 100)):
@@ -11,8 +11,9 @@ class Player(Circle):
             'asset/player.png').convert_alpha(), (radius, radius))
         self.angle = 0
         self.bullets = pg.sprite.Group()
-        self.blood = Blood(375, 250)
-        self.update()
+        self.blood = Blood(375, 255)
+        blood.add(self.blood)
+
 
     def fire(self):
         bullet = Bullet((30, 10), self.rect.center, self.angle)
@@ -22,7 +23,6 @@ class Player(Circle):
     def update(self):
         if self.launch_time == 0 or pg.time.get_ticks() - self.launch_time > 500:
             self.fire()
-        # set angle with mouse position
+            
         self.image = pg.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=self.rect.center)
-        self.blood.update()

@@ -3,6 +3,8 @@ import const.color as color
 import pygame as pg
 from modal.object import Rectangle
 
+blood = pg.sprite.Group()
+
 
 class Blood(Rectangle):
     def __init__(self, x, y):
@@ -21,10 +23,16 @@ class Blood(Rectangle):
             red_bar.fill(color.RED)
             self.image.blit(red_bar, (0, 0))
 
-        self.rect = self.image.get_rect(topleft=self.ori_position)
+        self.rect = self.image.get_rect(topleft=self.rect.topleft)
+
+    def goto(self, x, y):
+        self.rect.topleft = (x, y)
 
     def damage(self, value):
         self.hp -= value
         if self.hp < 0:
             self.hp = 0
         self.update()
+
+    def is_empty(self):
+        return self.hp <= 0
