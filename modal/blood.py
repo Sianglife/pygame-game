@@ -3,9 +3,6 @@ import const.color as color
 import pygame as pg
 from modal.object import Rectangle
 
-blood = pg.sprite.Group()
-
-
 class Blood(Rectangle):
     def __init__(self, x, y):
         super().__init__(color.RED, (50, 10), (x, y))

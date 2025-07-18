@@ -4,7 +4,6 @@ from const.color import *
 from modal.object import Rectangle
 from modal.player import Player
 from modal.enemy import Enemy
-from modal.blood import blood
 import random
 
 
@@ -62,15 +61,7 @@ while True:
     # Player update
     player.update()
 
-    if player.blood.is_empty():
-        player.blood.kill()
-        blood.remove(player.blood)
-        player.kill()
-        print("Player is dead!")
-        pg.quit()
-        sys.exit()
-
-    # move player bullet
+    # detect player bullet
     for bullet in player.bullets:
         if pg.sprite.spritecollide(bullet, obstacles, False):
             player.bullets.remove(bullet)
@@ -84,11 +75,29 @@ while True:
             player.bullets.remove(bullet)
             all_sprites.remove(bullet)
 
+    # detect enemy bullet
+    for enemy in enemies:
+        for bullet in enemy.bullets:
+            if pg.sprite.spritecollide(bullet, obstacles, False):
+                enemy.bullets.remove(bullet)
+                continue
+            if pg.sprite.collide_rect(bullet, player):
+                player.blood.damage(10)
+                enemy.bullets.remove(bullet)
+                continue
+            if bullet.rect.x < 0 or bullet.rect.x > SCREEN_SCALE[0] or bullet.rect.y < 0 or bullet.rect.y > SCREEN_SCALE[1]:
+                enemy.bullets.remove(bullet)
+                all_sprites.remove(bullet)
+
+
+    # Update object groups
+    backgroundObjects = pg.sprite.Group(
+        *obstacles, *enemies, *player.bullets)
+    for enemy in enemies:
+        backgroundObjects.add(enemy.bullets, enemy.blood)
+    all_sprites = pg.sprite.Group(player, player.blood, *backgroundObjects)
     # Update draw
     screen.fill(BLACK)
-    backgroundObjects = pg.sprite.Group(*obstacles, *enemies)
-    all_sprites = pg.sprite.Group(
-        player, *obstacles, *enemies, *player.bullets, *blood)
     all_sprites.update()
     all_sprites.draw(screen)
     pg.display.flip()
@@ -132,6 +141,10 @@ while True:
         if e.type == ENEMY_SPAWN_EVENT:
             enemy = Enemy(50, (random.randint(100, 400),
                           random.randint(100, 400)))
+            if pg.sprite.spritecollideany(enemy, obstacles) or pg.sprite.spritecollideany(enemy, enemies) or pg.sprite.collide_rect(enemy, player):
+                while pg.sprite.spritecollideany(enemy, obstacles) or pg.sprite.spritecollideany(enemy, enemies) or pg.sprite.collide_rect(enemy, player):
+                    enemy.rect.x = random.randint(100, 400)
+                    enemy.rect.y = random.randint(100, 400)
             enemies.add(enemy)
 
         if e.type == CHECK_DAMAGE_EVENT:
