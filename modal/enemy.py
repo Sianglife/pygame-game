@@ -27,7 +27,6 @@ class Enemy(GameObject):
 
 
     def update(self):
-        self.blood.goto(self.rect.x, self.rect.y - 15)
         if self.angle == 0:
             self.rect.x += self.speed
         elif self.angle == 90:
@@ -37,8 +36,6 @@ class Enemy(GameObject):
         elif self.angle == 270:
             self.rect.y += self.speed
 
-        self.image = pg.transform.rotate(self.ori_image, self.angle)
-        self.rect = self.ori_image.get_rect(center=self.rect.center)
 
         if self.blood.is_empty():
             self.kill()
@@ -48,3 +45,7 @@ class Enemy(GameObject):
 
         if self.launch_time == 0 or pg.time.get_ticks() - self.launch_time > 500:
             self.fire()
+
+        self.rect = self.ori_image.get_rect(center=self.rect.center)
+        self.blood.goto(self.rect.x, self.rect.y - 15)
+        self.image = pg.transform.rotate(self.ori_image, self.angle)
