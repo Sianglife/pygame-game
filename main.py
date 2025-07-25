@@ -5,6 +5,7 @@ from modal.object import Rectangle
 from modal.player import Player
 from modal.enemy import Enemy
 import random
+import pygame_gui as gui
 
 
 SCREEN_SCALE = (800, 600)
@@ -12,28 +13,69 @@ FPS = 60
 
 pg.init()
 pg.display.set_caption("window Game")
-
 screen = pg.display.set_mode(SCREEN_SCALE)
+mgr = gui.UIManager(SCREEN_SCALE)
+
+btn_start = gui.elements.UIButton(
+    relative_rect=pg.Rect(
+        ((SCREEN_SCALE[0]/2)-50, (SCREEN_SCALE[1]/2)-25), (100, 50)),
+    text='Start',
+    manager=mgr
+)
+
+score_label = gui.elements.UILabel(
+    relative_rect=pg.Rect((10, 10), (200, 30)),
+    text='Score: 0',
+    manager=mgr
+)
+
+score = 0
+
 clock = pg.time.Clock()
 
-
-# 物件初始化
-player = Player(WHITE, 50, (400, 300))
-
-obstacles = pg.sprite.Group(
-    Rectangle(BLUE, (200, 150), (100, 100)),
-    Rectangle(GREEN, (100, 100), (200, 400))
-)
-enemies = pg.sprite.Group()
-
-# 生成敵人
-ENEMY_SPAWN_EVENT = pg.USEREVENT + 1  # Event 1
+ENEMY_SPAWN_EVENT = pg.USEREVENT + 3  # Event 1
 pg.time.set_timer(ENEMY_SPAWN_EVENT, 3000)  # 每隔3秒生成敵人
 
 CHECK_DAMAGE_EVENT = pg.USEREVENT + 2  # Event 2
 pg.time.set_timer(CHECK_DAMAGE_EVENT, 700)  # 每隔0.7秒檢查傷害
 
-backgroundObjects = pg.sprite.Group(*obstacles)
+
+def init():
+    global player, obstacles, enemies, backgroundObjects, all_sprites
+
+    player = None
+    obstacles = pg.sprite.Group()
+    enemies = pg.sprite.Group()
+    backgroundObjects = pg.sprite.Group()
+    all_sprites = pg.sprite.Group()
+    score_label.hide()
+    btn_start.show()
+
+
+def start():
+    global player, obstacles, enemies, backgroundObjects, all_sprites, mode
+    # 物件初始化
+    player = Player(WHITE, 50, (400, 300))
+
+    obstacles = pg.sprite.Group(
+        Rectangle(BLUE, (200, 150), (100, 100)),
+        Rectangle(GREEN, (100, 100), (200, 400))
+    )
+    enemies = pg.sprite.Group()
+
+    backgroundObjects = pg.sprite.Group(*obstacles)
+    btn_start.hide()
+    score_label.show()
+    mode = 1
+
+
+init()
+
+
+def enemy_die_handler():
+    global score_label, score
+    score += 1
+    score_label.set_text(f'Score: {score}')
 
 
 def check_collision():
@@ -48,6 +90,10 @@ def move_background(dx, dy, reverse=True, recursive=True):
         dx = -dx
         dy = -dy
 
+    # 算速度量值(平方相加開根號)
+    speed = (dx**2 + dy**2)**0.5
+    player.set_speed(speed)
+
     for sprite in backgroundObjects:
         sprite.move(dx, dy)
 
@@ -56,8 +102,33 @@ def move_background(dx, dy, reverse=True, recursive=True):
                         recursive=False)  # 如果碰到障礙物就退一步
 
 
+mode = 0
+
 # 主迴圈
 while True:
+    time_delta = clock.tick(FPS) / 1000.0
+    mgr.update(time_delta)
+
+    screen.fill(BLACK)
+    all_sprites.update()
+    all_sprites.draw(screen)
+    mgr.draw_ui(screen)
+    pg.display.update()
+    clock.tick(FPS)
+
+    if mode == 0:
+        e = pg.event.wait()
+        if e.type == pg.QUIT:
+            pg.quit()
+            sys.exit()
+        mgr.process_events(e)
+
+        if e.type == gui.UI_BUTTON_PRESSED:
+            print("Game start!")
+            start()
+
+        continue
+
     # Player update
     player.update()
 
@@ -89,7 +160,6 @@ while True:
                 enemy.bullets.remove(bullet)
                 all_sprites.remove(bullet)
 
-
     # Update object groups
     backgroundObjects = pg.sprite.Group(
         *obstacles, *enemies, *player.bullets)
@@ -97,36 +167,33 @@ while True:
         backgroundObjects.add(enemy.bullets, enemy.blood)
     all_sprites = pg.sprite.Group(player, player.blood, *backgroundObjects)
     # Update draw
-    screen.fill(BLACK)
-    all_sprites.update()
-    all_sprites.draw(screen)
-    pg.display.flip()
 
     # Check keyboard input
     keys = pg.key.get_pressed()
+    speed = 5
     if keys[pg.K_LEFT] and keys[pg.K_DOWN]:
-        move_background(-5, 5)
+        move_background(-speed, speed)
         player.angle = 225
     elif keys[pg.K_LEFT] and keys[pg.K_UP]:
-        move_background(-5, -5)
+        move_background(-speed, -speed)
         player.angle = 135
     elif keys[pg.K_RIGHT] and keys[pg.K_DOWN]:
-        move_background(5, 5)
+        move_background(speed, speed)
         player.angle = 315
     elif keys[pg.K_RIGHT] and keys[pg.K_UP]:
-        move_background(5, -5)
+        move_background(speed, -speed)
         player.angle = 45
     elif keys[pg.K_LEFT]:
-        move_background(-5, 0)
+        move_background(-speed, 0)
         player.angle = 180
     elif keys[pg.K_RIGHT]:
-        move_background(5, 0)
+        move_background(speed, 0)
         player.angle = 0
     elif keys[pg.K_UP]:
-        move_background(0, -5)
+        move_background(0, -speed)
         player.angle = 90
     elif keys[pg.K_DOWN]:
-        move_background(0, 5)
+        move_background(0, speed)
         player.angle = 270
     if keys[pg.K_r]:
         player.reset()
@@ -139,8 +206,9 @@ while True:
             sys.exit()
 
         if e.type == ENEMY_SPAWN_EVENT:
+            print("Spawn Enemy")
             enemy = Enemy(50, (random.randint(100, 400),
-                          random.randint(100, 400)))
+                          random.randint(100, 400)), die_handler=enemy_die_handler)
             if pg.sprite.spritecollideany(enemy, obstacles) or pg.sprite.spritecollideany(enemy, enemies) or pg.sprite.collide_rect(enemy, player):
                 while pg.sprite.spritecollideany(enemy, obstacles) or pg.sprite.spritecollideany(enemy, enemies) or pg.sprite.collide_rect(enemy, player):
                     enemy.rect.x = random.randint(100, 400)
@@ -156,5 +224,3 @@ while True:
                 if pg.sprite.collide_rect(player, enemy):
                     player.blood.damage(10)
                     enemy.blood.damage(10)
-
-    clock.tick(FPS)

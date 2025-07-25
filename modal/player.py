@@ -14,6 +14,10 @@ class Player(Circle):
         self.angle = 0
         self.bullets = pg.sprite.Group()
         self.blood = Blood(375, 255)
+        self.speed = 5
+
+    def set_speed(self, speed):
+        self.speed = speed
 
     def kill(self):
         self.blood.kill()
@@ -22,7 +26,8 @@ class Player(Circle):
         super().kill()
 
     def fire(self):
-        bullet = Bullet((30, 10), self.rect.center, self.angle)
+        bullet = Bullet((30, 10), self.rect.center,
+                        self.angle, speed=self.speed+10)  # 考慮慣性，加上原本的速度
         self.bullets.add(bullet)
         self.launch_time = pg.time.get_ticks()
 

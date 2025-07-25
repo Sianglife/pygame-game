@@ -6,12 +6,12 @@ image = ['asset/bullet.png', 'asset/bullet-npc.png']
 
 
 class Bullet(GameObject):
-    def __init__(self, size, position=(100, 100), angle=0, role=0):
+    def __init__(self, size, position=(100, 100), angle=0, role=0, speed=10):
         super().__init__(size, position)
         self.original_image = pg.transform.scale(pg.image.load(
             image[role]).convert_alpha(), size)
         self.angle = angle  # 子彈的角度
-        self.move_speed = 10  # 子彈移動速度
+        self.move_speed = speed  # 子彈移動速度
         self.set_angle(angle)  # 設定角度與移動向量
         self.image = pg.transform.rotate(self.original_image, self.angle)
         self.rect = self.image.get_rect(center=position)

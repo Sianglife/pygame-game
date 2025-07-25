@@ -19,7 +19,7 @@ class GameObject(pg.sprite.Sprite):
         # 重置大小和位置
         self.rect.topleft = self.ori_position
         self.rect.size = self.ori_size
-
+    
 
 class Circle(GameObject):
     def __init__(self, color, circle_radius, position=(100, 100)):
