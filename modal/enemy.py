@@ -1,9 +1,13 @@
-from modal.bullet import Bullet
-import pygame as pg
-from modal.object import GameObject
-from const.config import SCREEN_SCALE
-from modal.blood import Blood
 import random
+import pygame as pg
+from modal.bullet import Bullet
+from modal.object import GameObject
+from modal.blood import Blood
+from modal.obstacles import obstacles
+from modal.player import player
+from const.event import ENEMY_DIE, CHECK_DAMAGE
+
+enemies = pg.sprite.Group()
 
 
 class Enemy(GameObject):
@@ -28,7 +32,7 @@ class Enemy(GameObject):
         self.launch_time = pg.time.get_ticks()
 
     def update(self):
-
+        # move enemy
         if self.angle == 0:
             self.rect.x += self.speed
         elif self.angle == 90:
@@ -38,18 +42,34 @@ class Enemy(GameObject):
         elif self.angle == 270:
             self.rect.y += self.speed
 
+        # check collision with player and other enemies
+        for e in pg.event.get():
+            if e.type == CHECK_DAMAGE:
+                collided = pg.sprite.spritecollide(self, obstacles, False)
+                if collided:
+                    self.blood.damage(10)
+                    self.angle = (self.angle + 180) % 360
+
+                collided = pg.sprite.spritecollide(self, player, False)
+                if collided:
+                    player.blood.damage(10)
+                    self.blood.damage(10)
+                    self.angle = (self.angle + 180) % 360
+
+                collided = pg.sprite.spritecollide(self, enemies, False)
+                if collided:
+                    for enemy in collided:
+                        if enemy != self:
+                            enemy.blood.damage(10)
+                            self.angle = (self.angle + 180) % 360
+
+        # check if died
         if self.blood.is_empty():
-            if self.die_handler:
-                self.die_handler()
+            pg.event.post(pg.event.Event(ENEMY_DIE, {'enemy': self}))
+            enemies.remove(self)
             self.kill()
-
-        # +-300才能追出去的感覺
-        if self.rect.x < -300 or self.rect.x > SCREEN_SCALE[0]+300 or self.rect.y < -300 or self.rect.y > SCREEN_SCALE[1]+300:
-            self.kill()
-
-        # if self.launch_time == 0 or pg.time.get_ticks() - self.launch_time > 500:
-        #     self.fire()
 
         self.rect = self.ori_image.get_rect(center=self.rect.center)
         self.blood.goto(self.rect.x, self.rect.y - 15)
         self.image = pg.transform.rotate(self.ori_image, self.angle)
+        super().update()

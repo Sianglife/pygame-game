@@ -1,36 +1,19 @@
 import pygame as pg
 import sys
+import random
 from const.color import *
 from modal.object import Rectangle
 from modal.player import Player
 from modal.enemy import Enemy
-import random
-import pygame_gui as gui
-
-
-SCREEN_SCALE = (800, 600)
-FPS = 60
+from modal.gui import btn_start
+from modal.Score import Score
+from const.config import SCREEN_SCALE, FPS
 
 pg.init()
-pg.display.set_caption("window Game")
+pg.display.set_caption("Survivorio")
 screen = pg.display.set_mode(SCREEN_SCALE)
-mgr = gui.UIManager(SCREEN_SCALE)
 
-btn_start = gui.elements.UIButton(
-    relative_rect=pg.Rect(
-        ((SCREEN_SCALE[0]/2)-50, (SCREEN_SCALE[1]/2)-25), (100, 50)),
-    text='Start',
-    manager=mgr
-)
-
-score_label = gui.elements.UILabel(
-    relative_rect=pg.Rect((10, 10), (200, 30)),
-    text='Score: 0',
-    manager=mgr
-)
-
-score = 0
-
+score = Score()
 clock = pg.time.Clock()
 
 ENEMY_SPAWN_EVENT = pg.USEREVENT + 3  # Event 1
@@ -48,7 +31,7 @@ def init():
     enemies = pg.sprite.Group()
     backgroundObjects = pg.sprite.Group()
     all_sprites = pg.sprite.Group()
-    score_label.hide()
+    score.hide()
     btn_start.show()
 
 
@@ -107,12 +90,12 @@ mode = 0
 # 主迴圈
 while True:
     time_delta = clock.tick(FPS) / 1000.0
-    mgr.update(time_delta)
+    gmgr.update(time_delta)
 
     screen.fill(BLACK)
     all_sprites.update()
     all_sprites.draw(screen)
-    mgr.draw_ui(screen)
+    gmgr.draw_ui(screen)
     pg.display.update()
     clock.tick(FPS)
 
@@ -121,7 +104,7 @@ while True:
         if e.type == pg.QUIT:
             pg.quit()
             sys.exit()
-        mgr.process_events(e)
+        gmgr.process_events(e)
 
         if e.type == gui.UI_BUTTON_PRESSED:
             print("Game start!")

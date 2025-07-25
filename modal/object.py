@@ -1,4 +1,6 @@
 import pygame as pg
+from const.config import SCREEN_SCALE, BOARD_BUFFER
+
 
 class GameObject(pg.sprite.Sprite):
     def __init__(self, size, position=(100, 100)):
@@ -19,7 +21,15 @@ class GameObject(pg.sprite.Sprite):
         # 重置大小和位置
         self.rect.topleft = self.ori_position
         self.rect.size = self.ori_size
-    
+
+    def update(self):
+        """
+        Check if the object is out of bounds.
+        """
+        if (self.rect.x < -BOARD_BUFFER or self.rect.x > SCREEN_SCALE[0] + BOARD_BUFFER or
+                self.rect.y < -BOARD_BUFFER or self.rect.y > SCREEN_SCALE[1] + BOARD_BUFFER):
+            self.kill()
+
 
 class Circle(GameObject):
     def __init__(self, color, circle_radius, position=(100, 100)):
@@ -30,6 +40,9 @@ class Circle(GameObject):
                        circle_radius), circle_radius)
         self.rect = self.image.get_rect(center=position)
 
+    def update(self):
+        return super().update()
+
 
 class Rectangle(GameObject):
     def __init__(self, color, size, position=(100, 100)):
@@ -38,3 +51,6 @@ class Rectangle(GameObject):
         self.image = pg.Surface(size)
         self.image.fill(color)
         self.rect = self.image.get_rect(topleft=position)
+
+    def update(self):
+        return super().update()

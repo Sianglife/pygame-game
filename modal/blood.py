@@ -3,6 +3,7 @@ import const.color as color
 import pygame as pg
 from modal.object import Rectangle
 
+
 class Blood(Rectangle):
     def __init__(self, x, y):
         super().__init__(color.RED, (50, 10), (x, y))
@@ -21,6 +22,8 @@ class Blood(Rectangle):
             self.image.blit(red_bar, (0, 0))
 
         self.rect = self.image.get_rect(topleft=self.rect.topleft)
+
+        super().update()
 
     def goto(self, x, y):
         self.rect.topleft = (x, y)

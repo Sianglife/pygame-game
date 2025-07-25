@@ -1,0 +1,4 @@
+import pygame as pg
+ENEMY_SPAWN_EVENT = pg.USEREVENT + 2
+CHECK_DAMAGE = pg.USEREVENT + 3
+ENEMY_DIE = pg.USEREVENT + 4

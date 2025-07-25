@@ -3,7 +3,7 @@ import pygame as pg
 import sys
 from modal.object import Circle
 from modal.blood import Blood
-
+import const.color as color
 
 class Player(Circle):
     def __init__(self, color, radius, position=(100, 100)):
@@ -40,3 +40,6 @@ class Player(Circle):
 
         if self.blood.is_empty():
             self.kill()
+
+
+player = Player(color.WHITE, 50, (400, 300))
